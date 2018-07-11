@@ -1,6 +1,7 @@
 package com.qin.miaosha.controller;
 
 import com.qin.miaosha.common.ServerResponse;
+import com.qin.miaosha.config.Limits;
 import com.qin.miaosha.domain.MiaoShaUser;
 import com.qin.miaosha.domain.MiaoshaOrder;
 
@@ -58,14 +59,12 @@ public  class MiaoshaController implements InitializingBean  {
        }
     }
 
+    @Limits(maxCount = 5,seconds = 60,needLogin = true)
     @RequestMapping(value = "do_miaosha",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse doMiaosha(MiaoShaUser miaoShaUser, Model model,@RequestParam("goodsId") long goodsId){
         model.addAttribute("user",miaoShaUser);
-        if(miaoShaUser==null){
-            return ServerResponse.createByErrorMessage("请登录");
 
-        }
 
         Boolean result =localOverMap.get(goodsId);
         if(result){
@@ -85,6 +84,7 @@ public  class MiaoshaController implements InitializingBean  {
         if(stock<0){
             localOverMap.put(goodsId,true);
             return ServerResponse.createByErrorMessage("秒杀失败库存不足");
+
         }
 
 
@@ -125,14 +125,11 @@ public  class MiaoshaController implements InitializingBean  {
         return  ServerResponse.createBySuccess();
     }
 
+    @Limits(maxCount = 5,seconds = 60,needLogin = true)
     @RequestMapping(value = "result",method = RequestMethod.GET)
     @ResponseBody
     public ServerResponse<Long> result(MiaoShaUser miaoShaUser, Model model,@RequestParam("goodsId") long goodsId) {
         model.addAttribute("user", miaoShaUser);
-        if (miaoShaUser == null) {
-            return ServerResponse.createByErrorMessage("请登录");
-
-        }
 
         long result = miaoshaService.getMiaoshaResult(miaoShaUser.getId(),goodsId);
         return ServerResponse.createBySuccess(result);

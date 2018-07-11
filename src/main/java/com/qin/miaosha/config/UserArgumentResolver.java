@@ -31,30 +31,12 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-        HttpServletRequest request =nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        HttpServletResponse response =nativeWebRequest.getNativeResponse(HttpServletResponse.class);
 
-        //参数中的token
-        String pToken = request.getParameter(Const.COOKI_NAME_TOKEN);
 
-        //cookie中的token
-        String cToken =getCookieValue(request,Const.COOKI_NAME_TOKEN);
-        if(StringUtils.isEmpty(pToken)&&StringUtils.isEmpty(cToken)){
-            return  null;
-        }
-
-        String token =StringUtils.isEmpty(pToken)?cToken:pToken;
-
-        return miaoShaUserService.getBytoken(token,response);
+        return UserContext.getUser();
     }
 
-    private String getCookieValue(HttpServletRequest request,String cookieName){
-        Cookie[] cookies=request.getCookies();
-        for(Cookie cookie:cookies){
-            if(cookie.getName().equals(cookieName)){
-                return cookie.getValue();
-            }
-        }
-        return  null;
-    }
+
+
+
 }
