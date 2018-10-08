@@ -1,14 +1,12 @@
 package com.qin.miaosha.controller;
 
-import com.qin.miaosha.Utils.ValidatorUtil;
-import com.qin.miaosha.common.ResponseCode;
+
 import com.qin.miaosha.common.ServerResponse;
 import com.qin.miaosha.service.MiaoShaUserService;
 import com.qin.miaosha.vo.LoginVo;
 
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tomcat.util.bcel.Const;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

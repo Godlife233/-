@@ -1,5 +1,6 @@
 package com.qin.miaosha.controller;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.qin.miaosha.common.ServerResponse;
 import com.qin.miaosha.config.Limits;
 import com.qin.miaosha.domain.MiaoShaUser;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Controller
 @RequestMapping("/miaosha/")
@@ -41,7 +44,11 @@ public  class MiaoshaController implements InitializingBean  {
     MQSender mqSender;
 
 
+
+
     private Map<Long,Boolean> localOverMap = new HashMap<Long, Boolean>();
+    private Map<Long,AtomicInteger> limtMap = new ConcurrentHashMap<Long,AtomicInteger>();
+    private final RateLimiter limiter  = RateLimiter.create(1000.0);
 
     /**
      *
@@ -56,6 +63,7 @@ public  class MiaoshaController implements InitializingBean  {
        for(GoodsVo goodsVo:goodsList){
            redisService.set(GoodsKey.getMiaoShaGoodsStock,""+goodsVo.getId(),goodsVo.getStockCount());
            localOverMap.put(goodsVo.getId(),false);
+           limtMap.put(goodsVo.getId(),new AtomicInteger(1000));
        }
     }
 
@@ -64,6 +72,13 @@ public  class MiaoshaController implements InitializingBean  {
     @ResponseBody
     public ServerResponse doMiaosha(MiaoShaUser miaoShaUser, Model model,@RequestParam("goodsId") long goodsId){
         model.addAttribute("user",miaoShaUser);
+        //资源限流，每次访问减一，最多能访问1000次
+        int count = limtMap.get(goodsId).decrementAndGet();
+        if(count<=0)return ServerResponse.createByErrorMessage("商品已售完");
+        if(!limit()){
+            return ServerResponse.createByErrorMessage("请稍后访问");
+        }
+        limtMap.put(goodsId,new AtomicInteger(count) );
 
 
         Boolean result =localOverMap.get(goodsId);
@@ -133,6 +148,11 @@ public  class MiaoshaController implements InitializingBean  {
 
         long result = miaoshaService.getMiaoshaResult(miaoShaUser.getId(),goodsId);
         return ServerResponse.createBySuccess(result);
+    }
+
+    private Boolean limit(){
+        Boolean result =limiter.tryAcquire();
+        return result;
     }
 
 

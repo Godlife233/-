@@ -4,6 +4,9 @@ import java.util.Date;
 
 public class MiaoShaUser {
 
+
+    private String email;
+    private Integer sta;
     private Long id;
     private String nickname;
     private String password;
@@ -12,6 +15,21 @@ public class MiaoShaUser {
     private Date registerDate;
     private Date lastLoginDate;
     private Integer loginCount;
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Integer getSta() {
+        return sta;
+    }
+
+    public void setSta(Integer sta) {
+        this.sta = sta;
+    }
 
     public Long getId() {
         return id;
